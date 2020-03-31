@@ -36,13 +36,15 @@
 
 Embedded::RadioModel::RadioModel(EMANE::NEMId id,
                                  EMANE::PlatformServiceProvider * pPlatformService,
-                                 EMANE::RadioServiceProvider * pRadioService):
+                                 EMANE::RadioServiceProvider * pRadioService,
+                                 int,
+                                 const std::string&):
   EMANE::MACLayerImplementor{id, pPlatformService,pRadioService},
   txTimedEventId_{},
   sMessage_{},
   destination_{}
 {}
-  
+
 Embedded::RadioModel::~RadioModel(){}
 
 void Embedded::RadioModel::initialize(EMANE::Registrar & registrar)
@@ -50,11 +52,11 @@ void Embedded::RadioModel::initialize(EMANE::Registrar & registrar)
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           EMANE::DEBUG_LEVEL,
                           "MACI %03hu Embedded::RadioModel::%s",
-                          id_, 
+                          id_,
                           __func__);
-  
+
   auto & configRegistrar = registrar.configurationRegistrar();
-  
+
   configRegistrar.registerNonNumeric<std::string>("message",
                                                   EMANE::ConfigurationProperties::REQUIRED,
                                                   {},
@@ -67,43 +69,43 @@ void Embedded::RadioModel::initialize(EMANE::Registrar & registrar)
 }
 
 
-    
+
 void Embedded::RadioModel::configure(const EMANE::ConfigurationUpdate & update)
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           EMANE::DEBUG_LEVEL,
                           "MACI %03hu Embedded::RadioModel::%s",
-                          id_, 
+                          id_,
                           __func__);
-  
+
   for(const auto & item : update)
     {
       if(item.first == "message")
         {
           sMessage_ = item.second[0].asString();
-          
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  EMANE::INFO_LEVEL, 
+                                  EMANE::INFO_LEVEL,
                                   "MACI %03hu Embedded::RadioModel::%s %s: %s",
-                                  id_, 
-                                  __func__, 
-                                  item.first.c_str(), 
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
                                   sMessage_.c_str());
         }
       else if(item.first == "destination")
         {
           destination_ = item.second[0].asUINT16();
-          
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  EMANE::INFO_LEVEL, 
+                                  EMANE::INFO_LEVEL,
                                   "MACI %03hu Embedded::RadioModel::%s %s: %hu",
-                                  id_, 
-                                  __func__, 
-                                  item.first.c_str(), 
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
                                   destination_);
         }
     }
-        
+
 }
 
 void Embedded::RadioModel::start()
@@ -111,24 +113,24 @@ void Embedded::RadioModel::start()
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           EMANE::DEBUG_LEVEL,
                           "MACI %03hu Embedded::RadioModel::%s",
-                          id_, 
+                          id_,
                           __func__);
 }
-    
+
 void Embedded::RadioModel::postStart()
 {
    LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                            EMANE::DEBUG_LEVEL,
                            "MACI %03hu Embedded::RadioModel::%s",
-                           id_, 
+                           id_,
                           __func__);
-   
+
   // we are just using a simple timer to generate/process input
   // coming from an upper waveform layer.
-  // 
+  //
   // most likely you will want to create a thread and engage in some
   // form of RPC or other messaging protocol
-  txTimedEventId_ = 
+  txTimedEventId_ =
     pPlatformService_->timerService().
     scheduleTimedEvent(EMANE::Clock::now() + std::chrono::seconds{1},
                        nullptr,
@@ -140,24 +142,24 @@ void Embedded::RadioModel::stop()
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           EMANE::DEBUG_LEVEL,
                           "MACI %03hu Embedded::RadioModel::%s",
-                          id_, 
+                          id_,
                           __func__);
-   
+
   // cleanup related to  timer service usage
   if(txTimedEventId_ != 0)
     {
       pPlatformService_->timerService().cancelTimedEvent(txTimedEventId_);
-      
+
       txTimedEventId_ = 0;
     }
 }
-    
+
 void Embedded::RadioModel::destroy() noexcept
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           EMANE::DEBUG_LEVEL,
                           "MACI %03hu Embedded::RadioModel::%s",
-                          id_, 
+                          id_,
                           __func__);
 }
 
@@ -166,24 +168,24 @@ void Embedded::RadioModel::processUpstreamPacket(const EMANE::CommonMACHeader & 
                                                  const EMANE::ControlMessages &)
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                          EMANE::DEBUG_LEVEL, 
+                          EMANE::DEBUG_LEVEL,
                           "MACI %03hu Embedded::RadioModel::%s message from %hu: %s",
-                          id_, 
-                          __func__, 
+                          id_,
+                          __func__,
                           pkt.getPacketInfo().getSource(),
                           std::string(static_cast<const char *>(pkt.get()),pkt.length()).c_str());
 
   std::cout<<std::string(static_cast<const char *>(pkt.get()),pkt.length())<<std::endl;
 }
-  
+
 void Embedded::RadioModel::processUpstreamControl(const EMANE::ControlMessages &)
 {}
 
 
 void Embedded::RadioModel::processDownstreamControl(const EMANE::ControlMessages &)
 {}
-  
-        
+
+
 void Embedded::RadioModel::processDownstreamPacket(EMANE::DownstreamPacket & pkt,
                                                    const EMANE::ControlMessages &)
 {}
@@ -198,6 +200,6 @@ void Embedded::RadioModel::processTimedEvent(EMANE::TimerEventId,
   EMANE::DownstreamPacket pkt({id_,destination_,0,EMANE::Clock::now()},
                               sMessage_.c_str(),
                               sMessage_.size());
-  
+
   sendDownstreamPacket(EMANE::CommonMACHeader{65533,10},pkt);
 };

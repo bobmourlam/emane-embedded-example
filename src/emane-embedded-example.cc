@@ -49,7 +49,7 @@ namespace
 {
   const char * DEFAULT_MESSAGE = "Hello World!";
   const char * DEFAULT_CONTROL_PORT_ENDPOINT = "0.0.0.0:47000";
-  
+
   std::mutex mutex{};
 
   void sighandler(int)
@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
           {nullptr, 0, nullptr, 0},
         };
 
-      
+
       int iOption{};
       int iOptionIndex{};
       EMANE::NEMId id{};
@@ -106,8 +106,8 @@ int main(int argc, char* argv[])
             case 'c':
               sControlPortEndpoint = optarg;
               break;
-              
-              
+
+
             case '?':
               if(optopt == 't')
                 {
@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
               return EXIT_FAILURE;
             }
         }
-      
+
       if(optind >= argc)
         {
           std::cerr<<"Missing parameters. See `emane-develop-mhal --help`."<<std::endl;
@@ -137,9 +137,9 @@ int main(int argc, char* argv[])
 
       // create and EMANE logger and set the initial level
       EMANE::Application::Logger logger;
-      
+
       logger.setLogLevel(EMANE::DEBUG_LEVEL);
-      
+
       // create an NEM builder
       EMANE::Application::NEMBuilder nemBuilder{};
 
@@ -153,7 +153,9 @@ int main(int argc, char* argv[])
                                                          {
                                                            {"message",{sMessage}}
                                                          },
-                                                         false);
+                                                         false,
+                                                         42,
+                                                         "My test");
 
       // store a borrowed reference to your radio model instance
       Embedded::RadioModel * pRadioModel{std::get<0>(items)};
@@ -162,7 +164,7 @@ int main(int argc, char* argv[])
 
       // add your radio model (as an NEMLayer) to your NEM layers
       layers.push_back(std::move(std::get<1>(items)));
-      
+
       // create and add to layers an emulator physical layer instance
       layers.push_back(nemBuilder.buildPHYLayer(id,
                                                 "",
@@ -179,13 +181,13 @@ int main(int argc, char* argv[])
 
       // create a list of all NEMs in your application (there should only be one)
       EMANE::Application::NEMs nems{};
-      
+
       nems.push_back(nemBuilder.buildNEM(id,
                                          layers,
                                          {},
                                          false));
 
-      // create application instance UUID 
+      // create application instance UUID
       uuid_t uuid;
       uuid_generate(uuid);
 
@@ -207,7 +209,7 @@ int main(int argc, char* argv[])
 
       // start the NEM manager
       pNEMManager->start();
-      
+
       // post-start the NEM manager
       pNEMManager->postStart();
 
@@ -226,10 +228,10 @@ int main(int argc, char* argv[])
       mutex.lock();
 
       //  applciation work...
-      
+
       // stop the  NEM manager
       pNEMManager->stop();
-      
+
       // destroy the NEM manager
       pNEMManager->destroy();
 
@@ -240,6 +242,6 @@ int main(int argc, char* argv[])
       std::cerr<<exp.what()<<std::endl;
       return EXIT_FAILURE;
     }
-  
+
   return EXIT_SUCCESS;
 }

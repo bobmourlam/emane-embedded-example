@@ -42,42 +42,44 @@ namespace Embedded
   public:
     RadioModel(EMANE::NEMId id,
                EMANE::PlatformServiceProvider *pPlatformService,
-               EMANE::RadioServiceProvider * pRadioServiceProvider);
-      
+               EMANE::RadioServiceProvider * pRadioServiceProvider,
+               int extraParam1,
+               const std::string& extraParam2);
+
     ~RadioModel();
-      
+
     void initialize(EMANE::Registrar & registrar) override;
-      
+
     void configure(const EMANE::ConfigurationUpdate & update) override;
 
     void start() override;
-    
+
     void postStart() override;
 
     void stop() override;
-    
+
     void destroy() noexcept override;
 
 
     void processUpstreamControl(const EMANE::ControlMessages & msgs) override;
 
-    
+
     void processUpstreamPacket(const EMANE::CommonMACHeader & hdr,
                                EMANE::UpstreamPacket & pkt,
                                const EMANE::ControlMessages & msgs) override;
 
     void processDownstreamControl(const EMANE::ControlMessages & msgs) override;
-  
-        
+
+
     void processDownstreamPacket(EMANE::DownstreamPacket & pkt,
                                  const EMANE::ControlMessages & msgs);
-    
+
     void processTimedEvent(EMANE::TimerEventId eventId,
                            const EMANE::TimePoint & expireTime,
                            const EMANE::TimePoint & scheduleTime,
                            const EMANE::TimePoint & fireTime,
                            const void * arg) override;
-    
+
   private:
     EMANE::TimerEventId txTimedEventId_;
     std::string sMessage_;
