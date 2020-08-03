@@ -146,6 +146,8 @@ int main(int argc, char* argv[])
       // create an NEMLayers instance to hold the layers of yoru NEM
       EMANE::Application::NEMLayers layers{};
 
+      Embedded::TestParamType testParam{12};
+
       // create an instance of YOUR radio model
       auto items =
         nemBuilder.buildMACLayer_T<Embedded::RadioModel>(id,
@@ -155,7 +157,8 @@ int main(int argc, char* argv[])
                                                          },
                                                          false,
                                                          42,
-                                                         "My test");
+                                                         "My test",
+                                                         testParam);
 
       // store a borrowed reference to your radio model instance
       Embedded::RadioModel * pRadioModel{std::get<0>(items)};

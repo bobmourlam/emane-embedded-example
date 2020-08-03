@@ -38,7 +38,8 @@ Embedded::RadioModel::RadioModel(EMANE::NEMId id,
                                  EMANE::PlatformServiceProvider * pPlatformService,
                                  EMANE::RadioServiceProvider * pRadioService,
                                  int,
-                                 const std::string&):
+                                 const std::string&,
+                                 TestParamType&):
   EMANE::MACLayerImplementor{id, pPlatformService,pRadioService},
   txTimedEventId_{},
   sMessage_{},

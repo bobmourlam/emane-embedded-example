@@ -37,6 +37,12 @@
 
 namespace Embedded
 {
+  struct TestParamType
+  {
+    int val;
+    TestParamType(const TestParamType&) = delete;
+  };
+
   class RadioModel : public EMANE::MACLayerImplementor
   {
   public:
@@ -44,7 +50,8 @@ namespace Embedded
                EMANE::PlatformServiceProvider *pPlatformService,
                EMANE::RadioServiceProvider * pRadioServiceProvider,
                int extraParam1,
-               const std::string& extraParam2);
+               const std::string& extraParam2,
+               TestParamType& extranParam3);
 
     ~RadioModel();
 
